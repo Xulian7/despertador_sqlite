@@ -1,12 +1,11 @@
-import sqlite3
+from sqlitecloud import SQLiteCloudConnection
 import datetime
 
 DB_URL = 'sqlitecloud://cz1dyazrhz.g4.sqlite.cloud:8860/auth.sqlitecloud?apikey=oHye0DO2njToIUEmIefnu3MJnPnUb4I7ZBOFJXuUhjw'
 
 def mantener_viva():
-    conn = None  # ✅ Evita warning de Pylance
     try:
-        conn = sqlite3.connect(DB_URL, uri=True)
+        conn = SQLiteCloudConnection(DB_URL)
         cur = conn.cursor()
 
         # Crear tabla si no existe
@@ -17,24 +16,21 @@ def mantener_viva():
             );
         """)
 
-        # Verificar conexión
-        cur.execute("SELECT 1;")
-        print(f"[{datetime.datetime.now()}] ✅ Ping OK: {cur.fetchone()}")
-
-        # Insertar registro con fecha actual
+        # Insertar registro
         now = datetime.datetime.now().isoformat(sep=' ', timespec='seconds')
         cur.execute("INSERT INTO time_log (time) VALUES (?);", (now,))
         conn.commit()
 
-        print(f"[{now}] 🕒 Registro insertado en time_log.")
+        print(f"[{now}] 🕒 Registro insertado y conexión viva.")
 
     except Exception as e:
-        print(f"[{datetime.datetime.now()}] ❌ Error: {e}")
+        print("❌ Error:", e)
 
     finally:
-        if conn:
+        try:
             conn.close()
+        except:
+            pass
 
 if __name__ == "__main__":
     mantener_viva()
-# keep_alive.py
