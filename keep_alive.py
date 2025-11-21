@@ -5,32 +5,17 @@ DB_URL = 'sqlitecloud://cz1dyazrhz.g4.sqlite.cloud:8860/auth.sqlitecloud?apikey=
 
 def mantener_viva():
     try:
-        conn = SQLiteCloudConnection(DB_URL)
-        cur = conn.cursor()
+        with SQLiteCloudConnection(DB_URL) as conn:
+            cur = conn.cursor()
 
-        # Crear tabla si no existe
-        cur.execute("""
-            CREATE TABLE IF NOT EXISTS time_log (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                time TEXT NOT NULL
-            );
-        """)
+            now = datetime.datetime.now().isoformat(sep=' ', timespec='seconds')
+            cur.execute("INSERT INTO time_log (time) VALUES (?);", (now,))
+            conn.commit()
 
-        # Insertar registro
-        now = datetime.datetime.now().isoformat(sep=' ', timespec='seconds')
-        cur.execute("INSERT INTO time_log (time) VALUES (?);", (now,))
-        conn.commit()
-
-        print(f"[{now}] 🕒 Registro insertado y conexión viva.")
+            print(f"[{now}] 🕒 Registro insertado y conexión viva.")
 
     except Exception as e:
         print("❌ Error:", e)
-
-    finally:
-        try:
-            conn.close()
-        except:
-            pass
 
 if __name__ == "__main__":
     mantener_viva()
